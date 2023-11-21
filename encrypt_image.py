@@ -1,28 +1,38 @@
+from cryptography.fernet import Fernet
+import os
 
-#rep
+def generate_key():
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
+    return key
 
-from PIL import Image
-import numpy as np
+def load_key():
+    return open("secret.key", "rb").read()
 
-def load_image(image_path):
-    with Image.open(image_path) as img:
-        return np.array(img)
-    
-def encrypt_imagen(image_array, key):
-    encrypted_imagen = image_array.copy()
-    for index, value in np.ndenumerate(image_array):
-        encrypted_imagen[index] = value ^ key 
-        return encrypted_imagen
-    
-def guardar_imagen(image_array, output_path):
-    img = Image.fromarray(image_array)
-    img.save(output_path)
+def encrypt_file(file_name, key):
+    f = Fernet(key)
+    with open(file_name, "rb") as file:
+        file_data = file.read()
+    encrypted_data = f.encrypt(file_data)
+    with open("encrypted_" + file_name, "wb") as file:
+        file.write(encrypted_data)
 
-image_path = ' '
-encrypted_imagen_path = ' '
+def decrypt_file(file_name, key):
+    f = Fernet(key)
+    with open(file_name, "rb") as file:
+        encrypted_data = file.read()
+    decrypted_data = f.decrypt(encrypted_data)
+    with open("decrypted_" + file_name, "wb") as file:  
+        file.write(decrypted_data)
 
-og_image = load_image(image_path)
-key = 123456
+key = generate_key()
 
-encrypted_imagen = encrypt_imagen(og_image, key)
-guardar_imagen(encrypted_imagen, encrypted_imagen_path)
+original_file = "foto.jpeg"
+
+
+encrypt_file(original_file, key)
+
+
+encrypted_file = "encrypted_" + original_file
+decrypt_file(encrypted_file, key)
